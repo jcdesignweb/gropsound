@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "strict": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist"
+  },
+  "include": [
+    "src/**/*",
+    "public",
+    "preload.js",
+    "src/**/*.ts",
+    "src/**/*.tsx" // Asegúrate de incluir archivos .tsx si estás usando JSX
+, "main.js"  ],
+  
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}
