@@ -7,10 +7,10 @@
   "scripts": {
     "compile": "tsc",
 
-    "webpack-dev": "NODE_ENV=development webpack serve --mode development",
+    "webpack-dev": "webpack serve --mode development",
 
     "build": "webpack --mode production",
-    "dev": "NODE_ENV=development tsc && webpack &&  electron .",
+    "dev": "tsc && webpack &&  electron .",
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make --platform win32",
