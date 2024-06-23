@@ -16,6 +16,9 @@ export class Cropper {
 
         const out = basePath + '/new.mp4'
 
+        console.log("basePath ---------- ", basePath)
+
+
         const cut = await window.electron.cropAudio(basePath, this.inputFile, fileExtension, startTime, duration);
         console.log("Cut Result", cut)
            

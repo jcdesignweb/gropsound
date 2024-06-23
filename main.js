@@ -20,10 +20,12 @@ const createWindow = () => {
     },
   });
 
-  console.log("------------------------- DIRNAME", __dirname)
-
   if (isDev) {
+
     mainWindow.loadURL('http://localhost:9000');
+
+    // Open the DevTools.
+    mainWindow.webContents.openDevTools();
   } else {
 
     // and load the index.html of the app.
@@ -44,9 +46,22 @@ const createWindow = () => {
   });
 
 
+  ipcMain.handle('select-file', async (event) => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile']
+    });
+    
+    if (result.canceled) {
+      return null;
+    } else {
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+      const filePath = result.filePaths[0];
+      const fileContent = fs.readFileSync(filePath);
+      return { filePath, fileContent: fileContent.toString('base64') };
+
+    }
+  });
+
 };
 
 // This method will be called when Electron has finished
@@ -99,7 +114,7 @@ ipcMain.handle('crop-audio', async (event, { basePath, inputFile, fileExtension,
   const temp_file = `${basePath}/tmp_output.${fileExtension}`
 
   const filename = inputFile.split('/').pop()
-    
+
   console.log("Temporal file", temp_file)
   console.log("Input file", inputFile)
 
@@ -107,12 +122,10 @@ ipcMain.handle('crop-audio', async (event, { basePath, inputFile, fileExtension,
 
     const finalOutputPath = path.join(basePath, filename);
 
-    // Copiar el archivo desde .asar a un directorio temporal fuera de .asar
-    const inputFilePath = path.join(app.getAppPath(), 'public', 'files', filename);
-    console.log("inputFilePath file", inputFilePath)
+
     console.log("---------------------------------------------")
 
-    fs.copyFileSync(inputFilePath, finalOutputPath);
+    fs.copyFileSync(inputFile, finalOutputPath);
 
     ffmpeg(finalOutputPath)
       .setStartTime(startTime) // tiempo de inicio en segundos

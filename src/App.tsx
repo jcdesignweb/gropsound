@@ -61,9 +61,20 @@ function loadSlider(sliderRef: any, audioFile: AudioFile) {
 	
 }
 
+function str2Blob(fileContent: string) {
+	const byteCharacters = atob(fileContent);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+	return blob
+} 
+
 function getTotalSecondsFromAudio(selectedFile: any): Promise<number> {
 	return new Promise((resolve, reject) => {
-		const audio = new Audio(URL.createObjectURL(selectedFile));
+		const audio = new Audio(selectedFile);
 		audio.addEventListener('loadedmetadata', () => {
 			if (audio.duration) {
 				resolve(parseInt(audio.duration.toString()))
@@ -76,7 +87,7 @@ function getTotalSecondsFromAudio(selectedFile: any): Promise<number> {
 
 export const App = () => {
 
-	const [file, setFile] = useState<File | null>(null);
+	//const [file, setFile] = useState<File | null>(null);
 	const [audioFile, setAudioFile] = useState<AudioFile | null>(null);
 	const sliderRef = useRef<HTMLDivElement>(null);
 	const [selectedFolder, setSelectedFolder] = React.useState<string | null>(null);
@@ -86,6 +97,33 @@ export const App = () => {
 
 		const folder = await window.electron.selectFolder();
 		setSelectedFolder(folder);
+	};
+
+
+	const handleSelectFile = async (event: React.MouseEvent<HTMLButtonElement>) => {
+		event.preventDefault();
+		console.log("handleSelectFile")
+
+		const {filePath, fileContent} = await window.electron.selectFile();
+		console.log("FILEPATH IS", filePath)
+
+		// seconds
+		let duration = 0
+		try {
+			duration = await getTotalSecondsFromAudio(filePath)
+			console.log("DURATION", duration)
+		} catch (error: unknown) {
+			console.error(error)
+			throw new Error('Error trying to get duration')
+		}
+
+		const name = filePath.split('/').pop()!
+
+		const audio = new AudioFile({ name, seconds: duration, fileContent, filePath })
+		setAudioFile(audio)
+		//setFile(filePath)
+		
+		//setSelectedFolder(file);
 	};
 
 
@@ -102,9 +140,9 @@ export const App = () => {
 			throw new Error('Error trying to get duration')
 		}
 
-		const audio = new AudioFile({ name, seconds: duration })
+		const audio = new AudioFile({ name, seconds: duration, fileContent: '', filePath: '' })
 		setAudioFile(audio)
-		setFile(event.target.files[0])
+		//setFile(event.target.files[0])
 
 	}
 
@@ -113,7 +151,7 @@ export const App = () => {
 			loadSlider(sliderRef.current, audioFile)
 		}
 
-	}, [file]);
+	}, [audioFile]);
 
 	useEffect(() => {
 
@@ -145,7 +183,7 @@ export const App = () => {
 			throw new Error("selectedFolder cannot be null")
 		}
 
-		if (file) {
+		if (audioFile) {
 
 			const reader = new FileReader();
 
@@ -153,26 +191,30 @@ export const App = () => {
 				const content = e.target.result;
 				try {
 
-					const { isSuccess, basePath, path } = await window.electron.saveFile(file.name, content);
-					console.log("IsSaved->isSuccess", isSuccess);
-					if (isSuccess) {
+					const fileExtension = audioFile.getName().split('.').pop()?.toLowerCase();
+					console.log("FileExtension", fileExtension)
 
-						const fileExtension = file.name.split('.').pop()?.toLowerCase();
-						console.log("FileExtension", fileExtension)
+					const cropper = new Cropper(audioFile.getFilePath())
+					const crop = await cropper.cutAudio(selectedFolder, startAtSecond, finishAtSecond, fileExtension!)
+					console.log("Crop result", crop)
 
-						const cropper = new Cropper(path)
-						cropper.cutAudio(selectedFolder, startAtSecond, finishAtSecond, fileExtension!)
-					}
+					//const { isSuccess, basePath, path } = await window.electron.saveFile(audioFile.getName(), content);
+					//console.log("IsSaved->isSuccess", isSuccess);
+					//if (isSuccess) {
+				
+					//}
 
 
 				} catch (error) {
 					console.error('Error saving file:', error);
 				}
 			};
-			reader.readAsArrayBuffer(file);
+			reader.readAsArrayBuffer(str2Blob(audioFile.getFileContent()));
 		}
 
 	};
+
+	//select-folder
 
 
 	return <>
@@ -196,10 +238,17 @@ export const App = () => {
 
 		<div className='container'>
 			<form action="#">
+
+				<div className="file-field input-field">
+
+					<br />	
+					<button onClick={handleSelectFile}>Seleccionar Audio</button>				
+				</div>
 				<div className="file-field input-field">
 					<div className="btn">
 						<span>ARCHIVO</span>
-						<input type="file" onChange={handleFileChange} />
+						
+						{/*<input type="file" onChange={handleFileChange} />*/}
 					</div>
 					<div className="file-path-wrapper">
 						<input className="file-path validate" type="text" />
@@ -208,7 +257,7 @@ export const App = () => {
 
 				<br /><br /><br />
 
-				{file && (
+				{audioFile && (
 					<div>
 
 					<div className="file-field input-field">
