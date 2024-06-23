@@ -3,6 +3,11 @@ const path = require('node:path')
 const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg')
 
+const { isWindowsOs } = require('./dist/utils');
+
+
+const SLASH_FOLDER = (isWindowsOs())? '\\' : '/'
+
 const isDev = process.env.NODE_ENV === 'development';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -113,7 +118,8 @@ ipcMain.handle('save-file', async (event, { filePath, fileContent }) => {
 ipcMain.handle('crop-audio', async (event, { basePath, inputFile, fileExtension, startTime, duration }) => {
   const temp_file = `${basePath}/tmp_output.${fileExtension}`
 
-  const filename = inputFile.split('/').pop()
+  const filename = inputFile.split(SLASH_FOLDER).pop()
+
 
   console.log("Temporal file", temp_file)
   console.log("Input file", inputFile)
@@ -121,6 +127,9 @@ ipcMain.handle('crop-audio', async (event, { basePath, inputFile, fileExtension,
   return new Promise((resolve, reject) => {
 
     const finalOutputPath = path.join(basePath, filename);
+    console.log("finalOutputPath ----> ", finalOutputPath)
+    console.log("finalOutputPath 2 ----> ", basePath + "/"+ filename)
+    console.log("filename 2 ----> ", filename)
 
 
     console.log("---------------------------------------------")
@@ -145,4 +154,5 @@ ipcMain.handle('crop-audio', async (event, { basePath, inputFile, fileExtension,
   })
 
 });
+
 
