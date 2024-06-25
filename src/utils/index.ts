@@ -1,4 +1,4 @@
-import os from 'os'
+import os from 'os';
 
 export const isWindowsOs = () => {
   console.log(os.platform());

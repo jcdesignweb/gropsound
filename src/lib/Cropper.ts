@@ -10,17 +10,16 @@ export class Cropper {
     basePath: string,
     startTime: number,
     duration: number,
-    fileExtension: string,
+    fileExtension: string
   ) {
-    
     const result = await window.electron.cropAudio(
       basePath,
       this.inputFile,
       fileExtension,
       startTime,
-      duration,
+      duration
     );
 
-    return result
+    return result;
   }
 }
