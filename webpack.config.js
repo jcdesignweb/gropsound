@@ -9,9 +9,11 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx']
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    fallback: {
+      "os": require.resolve("os-browserify/browser")
+    }
   },
-  //externals: [nodeExternals()],
   module: {
     rules: [
       {

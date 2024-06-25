@@ -23,6 +23,7 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
     },
+    icon: path.join(__dirname, 'public/img/gropsound-ic.png')
   });
 
   if (isDev) {
@@ -96,30 +97,10 @@ app.on('window-all-closed', () => {
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
 
-ipcMain.handle('save-file', async (event, { filePath, fileContent }) => {
-
-  // Convert ArrayBuffer to Buffer
-  const buffer = Buffer.from(fileContent);
-
-  const basePath = path.join(__dirname, '/public/files');
-  const savePath = path.join(basePath, filePath);
-
-  console.log("FilePath", filePath)
-  console.log("savePath", savePath)
-
-  fs.writeFileSync(savePath, buffer);
-  return {
-    isSuccess: true,
-    basePath,
-    path: savePath,
-  };
-});
-
 ipcMain.handle('crop-audio', async (event, { basePath, inputFile, fileExtension, startTime, duration }) => {
   const temp_file = `${basePath}/tmp_output.${fileExtension}`
 
   const filename = inputFile.split(SLASH_FOLDER).pop()
-
 
   console.log("Temporal file", temp_file)
   console.log("Input file", inputFile)
@@ -127,10 +108,6 @@ ipcMain.handle('crop-audio', async (event, { basePath, inputFile, fileExtension,
   return new Promise((resolve, reject) => {
 
     const finalOutputPath = path.join(basePath, filename);
-    console.log("finalOutputPath ----> ", finalOutputPath)
-    console.log("finalOutputPath 2 ----> ", basePath + "/"+ filename)
-    console.log("filename 2 ----> ", filename)
-
 
     console.log("---------------------------------------------")
 

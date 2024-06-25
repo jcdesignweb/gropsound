@@ -1,34 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react';
-import 'materialize-css/dist/css/materialize.min.css';
 
+import 'material-icons/iconfont/material-icons.css';
+import 'materialize-css/dist/css/materialize.min.css';
 import M from 'materialize-css/dist/js/materialize.min.js';
+
+import '/public/css/styles.css';
 
 
 import noUiSlider from 'nouislider';
 import 'nouislider/dist/nouislider.css';
 import { Cropper } from './lib/Cropper';
 import { AudioFile } from './domain/AudioFile';
+import { secondsToMmSs } from './utils';
 
 
 function calculatePoints(points: string[]): {startAtSecond: number, finishAtSecond: number} {
 
 	const startAtSecond = parseInt(points[0])
-	const finishAtSecond = parseInt(points[1])
-
-	const seconds = finishAtSecond - startAtSecond
-	console.log("Finish total seconds", seconds)
+	const finishAtSecond = parseInt(points[1]) - startAtSecond
+	
 	return {
 		startAtSecond,
-		finishAtSecond: seconds
+		finishAtSecond
 	}
 }
 
-function secondsToMmSs(s: number) {
-	const minutes = Math.floor(s / 60);
-	const seconds = Math.floor(s - minutes * 60);
-	
-	return `${minutes}:${seconds}`
-}
 
 function loadSlider(sliderRef: any, audioFile: AudioFile) {
 
@@ -52,12 +48,7 @@ function loadSlider(sliderRef: any, audioFile: AudioFile) {
 			}
 		});
 
-
-		
-		
 	}
-
-
 	
 }
 
@@ -102,10 +93,8 @@ export const App = () => {
 
 	const handleSelectFile = async (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
-		console.log("handleSelectFile")
 
 		const {filePath, fileContent} = await window.electron.selectFile();
-		console.log("FILEPATH IS", filePath)
 
 		// seconds
 		let duration = 0
@@ -121,30 +110,7 @@ export const App = () => {
 
 		const audio = new AudioFile({ name, seconds: duration, fileContent, filePath })
 		setAudioFile(audio)
-		//setFile(filePath)
-		
-		//setSelectedFolder(file);
 	};
-
-
-	async function handleFileChange(event: any) {
-
-		const { name } = event.target.files[0]
-
-		// seconds
-		let duration = 0
-		try {
-			duration = await getTotalSecondsFromAudio(event.target.files[0])
-		} catch (error: unknown) {
-			console.error(error)
-			throw new Error('Error trying to get duration')
-		}
-
-		const audio = new AudioFile({ name, seconds: duration, fileContent: '', filePath: '' })
-		setAudioFile(audio)
-		//setFile(event.target.files[0])
-
-	}
 
 	useEffect(() => {
 		if (audioFile) {
@@ -154,8 +120,6 @@ export const App = () => {
 	}, [audioFile]);
 
 	useEffect(() => {
-
-
 		var elems = document.querySelectorAll('.sidenav');
 		var instances = M.Sidenav.init(elems, {});
 		
@@ -172,10 +136,6 @@ export const App = () => {
 
 	const handleUpload = async (event: React.MouseEvent<HTMLButtonElement>) => {
 		event.preventDefault();
-
-		if (sliderRef) {
-			console.log("UI SLIDER", ((sliderRef.current as any).noUiSlider).get())
-		}
 
 		const {startAtSecond, finishAtSecond} = calculatePoints(((sliderRef.current as any).noUiSlider).get())
 
@@ -197,13 +157,7 @@ export const App = () => {
 					const cropper = new Cropper(audioFile.getFilePath())
 					const crop = await cropper.cutAudio(selectedFolder, startAtSecond, finishAtSecond, fileExtension!)
 					console.log("Crop result", crop)
-
-					//const { isSuccess, basePath, path } = await window.electron.saveFile(audioFile.getName(), content);
-					//console.log("IsSaved->isSuccess", isSuccess);
-					//if (isSuccess) {
-				
-					//}
-
+					
 
 				} catch (error) {
 					console.error('Error saving file:', error);
@@ -214,9 +168,6 @@ export const App = () => {
 
 	};
 
-	//select-folder
-
-
 	return <>
 		<header>
 			<nav>
@@ -226,11 +177,9 @@ export const App = () => {
 				<a href="#" data-target="slide-out" className="sidenav-trigger"><i className="material-icons">menu</i></a>
 
 				<div className="nav-wrapper black">
-					<a href="#" className="brand-logo">Logo</a>
+					<img className="brand-logo" src={"public/img/gropsound-ic.png"} width="50" />
 					<ul id="nav-mobile" className="right hide-on-med-and-down">
-						<li><a href="sass.html">Sass</a></li>
-						<li><a href="badges.html">Components</a></li>
-						<li><a href="collapsible.html">JavaScript</a></li>
+						
 					</ul>
 				</div>
 			</nav>
@@ -242,18 +191,39 @@ export const App = () => {
 				<div className="file-field input-field">
 
 					<br />	
-					<button onClick={handleSelectFile}>Seleccionar Audio</button>				
-				</div>
-				<div className="file-field input-field">
-					<div className="btn">
-						<span>ARCHIVO</span>
+					
+					<button onClick={handleSelectFile} className='btn'>Seleccionar Audio</button>				
+
+					<br /><br /> <br />
+					<div className="">
 						
-						{/*<input type="file" onChange={handleFileChange} />*/}
-					</div>
-					<div className="file-path-wrapper">
-						<input className="file-path validate" type="text" />
+						{audioFile && (
+							<div>
+								
+								<table border={0}>
+									<tr>
+										<td>Nombre de archivo:</td>
+										<td><span><b>{audioFile.getName()}</b></span></td>
+									</tr>
+									<tr>
+										<td>Ruta de archivo:</td>
+										<td><span><b>{audioFile.getFilePath()}</b></span></td>
+									</tr>
+
+									{selectedFolder && (
+									<tr>
+										<td>Ruta destino del archivo:</td>
+										<td><span><b>{selectedFolder}</b></span></td>
+									</tr>
+									)}
+									
+								</table>
+							</div>
+							
+						)}
 					</div>
 				</div>
+				
 
 				<br /><br /><br />
 
@@ -266,11 +236,9 @@ export const App = () => {
 					</div>
 
 					<div className="file-field input-field">
-						<button onClick={handleSelectFolder}>Seleccionar Carpeta</button>
-						{selectedFolder && <p>Carpeta seleccionada: {selectedFolder}</p>}
+						<button className='btn' onClick={handleSelectFolder}>Seleccionar Carpeta</button>
 
 					</div>
-
 
 					{selectedFolder && 
 					<div>
@@ -285,12 +253,7 @@ export const App = () => {
 					
 					</div>
 
-
-
 				)}
-
-				
-
 
 			</form>
 		</div>

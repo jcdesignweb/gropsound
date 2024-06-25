@@ -1,4 +1,4 @@
 declare module 'materialize-css/dist/js/materialize.min.js' {
-    const M: any;
-    export = M;
+  const M: any;
+  export = M;
 }

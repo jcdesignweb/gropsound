@@ -4,6 +4,7 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
+    executableName: 'gropsound',
   },
   rebuildConfig: {},
   makers: [
@@ -23,7 +24,11 @@ module.exports = {
     },
     {
       name: '@electron-forge/maker-deb',
-      config: {},
+      config: {
+        options: {
+          // specific options for debian
+        },
+      },
     },
     /*{
       name: '@electron-forge/maker-rpm',
